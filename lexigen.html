@@ -17,7 +17,7 @@
     button,
     textarea
     {
-        font-size: 1.2vw;
+        font-size: 1vw;
     }
 
     .text
@@ -25,26 +25,30 @@
         overflow: scroll;
         resize: none;
         white-space: pre;
-        width: 16.66vw;
-        height: 80vh;
+        width: calc( 100vw / 7 );
+        height: 82vh;
     }
 
     .input
     {
-        width: 16.66vw;
+        width: calc( 100vw / 7 );
         height: 5vh;
+        font-size: 1vw;
     }
 
     .checkbox
     {
-        margin-left: 2vw;
+        font-size: 0.7vw;
     }
 </style>
 <table>
     <tbody>
         <tr>
             <td>
-                <textarea id="ReferenceText" class="text" placeholder="Reference Text" spellcheck="false"></textarea>
+                <textarea id="BaseText" class="text" placeholder="Base Text" spellcheck="false"></textarea>
+            </td>
+            <td>
+                <textarea id="TranslatedText" class="text" placeholder="Translated Text" spellcheck="false"></textarea>
             </td>
             <td>
                 <textarea id="TranslationText1" class="text" placeholder="Translation Text" spellcheck="false"></textarea>
@@ -64,25 +68,71 @@
         </tr>
         <tr>
             <td>
-                <input id="ReferenceTextSize" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+                <input id="BaseTextSize" class="input" type="text" placeholder="Base Text Size" disabled="disabled"/>
             </td>
             <td>
-                <input id="TranslationTextSize1" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+                <input id="TranslatedTextSize" class="input" type="text" placeholder="Translated Text Size" disabled="disabled"/>
             </td>
             <td>
-                <input id="TranslationTextSize2" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+                <input id="TranslationTextSize1" class="input" type="text" placeholder="Translation Text Size" disabled="disabled"/>
             </td>
             <td>
-                <input id="TranslationTextSize3" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+                <input id="TranslationTextSize2" class="input" type="text" placeholder="Translation Text Size" disabled="disabled"/>
             </td>
             <td>
-                <input id="TranslationTextSize4" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+                <input id="TranslationTextSize3" class="input" type="text" placeholder="Translation Text Size" disabled="disabled"/>
             </td>
             <td>
-                <input id="MergedTextSize" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+                <input id="TranslationTextSize4" class="input" type="text" placeholder="Translation Text Size" disabled="disabled"/>
+            </td>
+            <td>
+                <input id="MergedTextSize" class="input" type="text" placeholder="Translation Text Size" disabled="disabled"/>
             </td>
         </tr>
         <tr>
+            <td>
+                <div class="checkbox">
+                    <input id="BaseIsTrimmed" type="checkbox"/>&nbsp;trim
+                </div>
+                <div class="checkbox">
+                    <input id="BaseIsCapitalized" type="checkbox"/>&nbsp;capitalize&nbsp;
+                    <input id="BaseIsPunctuated" type="checkbox"/>&nbsp;punctuate
+                </div>
+                <div class="checkbox">
+                    <input id="BaseIsUncapitalized" type="checkbox"/>&nbsp;uncapitalize&nbsp;
+                    <input id="BaseIsUnpunctuated" type="checkbox"/>&nbsp;unpunctuate
+                </div>
+            </td>
+            <td>
+            </td>
+            <td>
+            </td>
+            <td>
+            </td>
+            <td>
+            </td>
+            <td>
+            </td>
+            <td>
+                <div class="checkbox">
+                    <input id="TranslationIsTrimmed" type="checkbox"/>&nbsp;trim
+                </div>
+                <div class="checkbox">
+                    <input id="TranslationIsCapitalized" type="checkbox"/>&nbsp;capitalize&nbsp;
+                    <input id="TranslationIsPunctuated" type="checkbox"/>&nbsp;punctuate
+                </div>
+                <div class="checkbox">
+                    <input id="TranslationIsUncapitalized" type="checkbox"/>&nbsp;uncapitalize&nbsp;
+                    <input id="TranslationIsUnpunctuated" type="checkbox"/>&nbsp;unpunctuate
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick="Apply()">Apply</button>
+            </td>
+            <td>
+            </td>
             <td>
                 <input id="PrefixArray" class="input" type="text" placeholder="Prefix List"/>
             </td>
@@ -92,25 +142,14 @@
             <td>
                 <input id="TranslationSeparator" class="input" type="text" placeholder="Translation Separator" value="/"/>
             </td>
+            <td>
+            </td>
+            <td>
+                <button onclick="Apply()">Apply</button>
+            </td>
         </tr>
     </tbody>
 </table>
-<button onclick="Merge()">Merge</button>
-<span class="checkbox">
-    <input id="IsTrimmed" type="checkbox"/>&nbsp;trimmed
-</span>
-<span class="checkbox">
-    <input id="IsCapitalized" type="checkbox"/>&nbsp;capitalized
-</span>
-<span class="checkbox">
-    <input id="IsUncapitalized" type="checkbox"/>&nbsp;uncapitalized
-</span>
-<span class="checkbox">
-    <input id="IsPunctuated" type="checkbox"/>&nbsp;punctuated
-</span>
-<span class="checkbox">
-    <input id="IsUnpunctuated" type="checkbox"/>&nbsp;unpunctuated
-</span>
 <script>
     // -- FUNCTIONS
 
@@ -132,7 +171,8 @@
         event
         )
     {
-        document.getElementById( "ReferenceTextSize" ).value = GetTextSize( "ReferenceText" );
+        document.getElementById( "BaseTextSize" ).value = GetTextSize( "BaseText" );
+        document.getElementById( "TranslatedTextSize" ).value = GetTextSize( "TranslatedText" );
         document.getElementById( "TranslationTextSize1" ).value = GetTextSize( "TranslationText1" );
         document.getElementById( "TranslationTextSize2" ).value = GetTextSize( "TranslationText2" );
         document.getElementById( "TranslationTextSize3" ).value = GetTextSize( "TranslationText3" );
@@ -268,16 +308,22 @@
 
     // ~~
 
-    function Merge()
+    function Apply()
     {
         var
+            base_line,
+            base_line_is_capitalized,
+            base_line_is_punctuated,
+            base_line_is_trimmed,
+            base_line_is_uncapitalized,
+            base_line_is_unpunctuated,
             merged_line_array,
             merged_line_index,
-            merged_text,
             prefix_array,
             suffix_array,
-            reference_line_array,
+            base_line_array,
             merged_line_count,
+            translated_line_array,
             translation_array,
             translation_count_map,
             translation_line,
@@ -293,8 +339,11 @@
             translation_text_count,
             translation_text_index;
 
-        reference_line_array = document.getElementById( "ReferenceText" ).value.split( "\n" );
-        merged_line_count = reference_line_array.length;
+        base_line_array = document.getElementById( "BaseText" ).value.split( "\n" );
+        merged_line_count = base_line_array.length;
+
+        translated_line_array = [];
+        translated_line_array.length = merged_line_count;
 
         translation_line_array_array = [];
         translation_text_count = 4;
@@ -316,6 +365,7 @@
             }
 
             translation_line_array_array.push( translation_line_array );
+
         }
 
         merged_line_array = [];
@@ -323,18 +373,53 @@
 
         prefix_array = document.getElementById( "PrefixArray" ).value.split( "," );
         suffix_array = document.getElementById( "SuffixArray" ).value.split( "," );
-
         translation_separator = document.getElementById( "TranslationSeparator" ).value;
-        translation_line_is_trimmed = document.getElementById( "IsTrimmed" ).checked;
-        translation_line_is_capitalized = document.getElementById( "IsCapitalized" ).checked;
-        translation_line_is_uncapitalized = document.getElementById( "IsUncapitalized" ).checked;
-        translation_line_is_punctuated = document.getElementById( "IsPunctuated" ).checked;
-        translation_line_is_unpunctuated = document.getElementById( "IsUnpunctuated" ).checked;
+
+        base_line_is_trimmed = document.getElementById( "BaseIsTrimmed" ).checked;
+        base_line_is_capitalized = document.getElementById( "BaseIsCapitalized" ).checked;
+        base_line_is_uncapitalized = document.getElementById( "BaseIsUncapitalized" ).checked;
+        base_line_is_punctuated = document.getElementById( "BaseIsPunctuated" ).checked;
+        base_line_is_unpunctuated = document.getElementById( "BaseIsUnpunctuated" ).checked;
+
+        translation_line_is_trimmed = document.getElementById( "TranslationIsTrimmed" ).checked;
+        translation_line_is_capitalized = document.getElementById( "TranslationIsCapitalized" ).checked;
+        translation_line_is_uncapitalized = document.getElementById( "TranslationIsUncapitalized" ).checked;
+        translation_line_is_punctuated = document.getElementById( "TranslationIsPunctuated" ).checked;
+        translation_line_is_unpunctuated = document.getElementById( "TranslationIsUnpunctuated" ).checked;
 
         for ( merged_line_index = 0;
               merged_line_index < merged_line_count;
               ++merged_line_index )
         {
+            base_line = base_line_array[ merged_line_index ];
+
+            if ( base_line_is_trimmed )
+            {
+                base_line = base_line.trim();
+            }
+
+            if ( base_line_is_capitalized )
+            {
+                base_line = GetCapitalizedLine( base_line );
+            }
+
+            if ( base_line_is_uncapitalized )
+            {
+                base_line = GetUncapitalizedLine( base_line );
+            }
+
+            if ( base_line_is_punctuated )
+            {
+                base_line = GetPunctuatedLine( base_line );
+            }
+
+            if ( base_line_is_unpunctuated )
+            {
+                base_line = GetUnpunctuatedLine( base_line );
+            }
+
+            translated_line_array[ merged_line_index ] = base_line;
+
             translation_count_map = new Map();
 
             for ( translation_text_index = 0;
@@ -408,9 +493,8 @@
             merged_line_array[ merged_line_index ] = translation_array.join( translation_separator );
         }
 
-        merged_text = merged_line_array.join( "\n" );
-
-        document.getElementById( "MergedText" ).value = merged_text;
+        document.getElementById( "TranslatedText" ).value = translated_line_array.join( "\n" );
+        document.getElementById( "MergedText" ).value = merged_line_array.join( "\n" );
 
         UpdateTextSize();
     }
@@ -448,7 +532,7 @@
 
     UpdateTextSize();
 
-    document.getElementById( "ReferenceText" ).addEventListener( "input", UpdateTextSize, false );
+    document.getElementById( "BaseText" ).addEventListener( "input", UpdateTextSize, false );
     document.getElementById( "TranslationText1" ).addEventListener( "input", UpdateTextSize, false );
     document.getElementById( "TranslationText2" ).addEventListener( "input", UpdateTextSize, false );
     document.getElementById( "TranslationText3" ).addEventListener( "input", UpdateTextSize, false );
