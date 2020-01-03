@@ -1,0 +1,418 @@
+<meta charset="utf-8">
+<style>
+    *
+    {
+        padding: 0;
+        margin: 0;
+    }
+
+    table
+    {
+        border-collapse: collapse;
+    }
+
+    html,
+    table,
+    input,
+    button,
+    textarea
+    {
+        font-size: 1.2vw;
+    }
+
+    .text
+    {
+        overflow: scroll;
+        resize: none;
+        white-space: pre;
+        width: 16.66vw;
+        height: 87vh;
+    }
+
+    .input
+    {
+        width: 16.66vw;
+        height: 5vh;
+    }
+
+    .checkbox
+    {
+        margin-left: 2vw;
+    }
+</style>
+<table>
+    <tbody>
+        <tr>
+            <td>
+                <textarea id="ReferenceText" class="text" placeholder="Reference Text" spellcheck="false"></textarea>
+            </td>
+            <td>
+                <textarea id="TranslationText1" class="text" placeholder="Translation Text" spellcheck="false"></textarea>
+            </td>
+            <td>
+                <textarea id="TranslationText2" class="text" placeholder="Translation Text" spellcheck="false"></textarea>
+            </td>
+            <td>
+                <textarea id="TranslationText3" class="text" placeholder="Translation Text" spellcheck="false"></textarea>
+            </td>
+            <td>
+                <textarea id="TranslationText4" class="text" placeholder="Translation Text" spellcheck="false"></textarea>
+            </td>
+            <td>
+                <textarea id="MergedText" class="text" placeholder="Merged Text" spellcheck="false"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input id="ReferenceTextCounts" class="input" type="text" placeholder="Reference Text Counts" disabled="disabled"/>
+            </td>
+            <td>
+                <input id="PrefixArray" class="input" type="text" placeholder="Prefix List"/>
+            </td>
+            <td>
+                <input id="SuffixArray" class="input" type="text" placeholder="Suffix List"/>
+            </td>
+            <td>
+                <input id="TranslationSeparator" class="input" type="text" placeholder="Translation Separator" value="/"/>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<button onclick="Merge()">Merge</button>
+<span class="checkbox">
+    <input id="IsTrimmed" type="checkbox"/>&nbsp;trimmed
+</span>
+<span class="checkbox">
+    <input id="IsCapitalized" type="checkbox"/>&nbsp;capitalized
+</span>
+<span class="checkbox">
+    <input id="IsUncapitalized" type="checkbox"/>&nbsp;uncapitalized
+</span>
+<span class="checkbox">
+    <input id="IsPunctuated" type="checkbox"/>&nbsp;punctuated
+</span>
+<span class="checkbox">
+    <input id="IsUnpunctuated" type="checkbox"/>&nbsp;unpunctuated
+</span>
+<script>
+    // -- FUNCTIONS
+
+    function GetCapitalizedLine(
+        line
+        )
+    {
+        if ( line.length <= 1 )
+        {
+            return line.toUpperCase();
+        }
+        else
+        {
+            return line[ 0 ].toUpperCase() + line.substring( 1 );
+        }
+    }
+
+    // ~~
+
+    function GetUncapitalizedLine(
+        line
+        )
+    {
+        if ( line.length <= 1 )
+        {
+            return line.toLowerCase();
+        }
+        else
+        {
+            return line[ 0 ].toLowerCase() + line.substring( 1 );
+        }
+    }
+
+    // ~~
+
+    function GetPunctuatedLine(
+        line
+        )
+    {
+        if ( line.length > 0
+             && ".!?".indexOf( line[ line.length - 1 ] ) < 0 )
+        {
+            return line + ".";
+        }
+        else
+        {
+            return line;
+        }
+    }
+
+    // ~~
+
+    function GetUnpunctuatedLine(
+        line
+        )
+    {
+        if ( line.length > 0
+             && ".".indexOf( line[ line.length - 1 ] ) >= 0 )
+        {
+            return line.substring( 0, line.length - 1 );
+        }
+        else
+        {
+            return line;
+        }
+    }
+
+    // ~~
+
+    function HasValidPrefix(
+        line,
+        prefix_array
+        )
+    {
+        var
+            prefix_index;
+
+        if ( prefix_array.length == 0 )
+        {
+            return true;
+        }
+        else
+        {
+            for ( prefix_index = 0;
+                  prefix_index < prefix_array.length;
+                  ++prefix_index )
+            {
+                if ( line.startsWith( prefix_array[ prefix_index ] ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    // ~~
+
+    function HasValidSuffix(
+        line,
+        suffix_array
+        )
+    {
+        var
+            suffix_index;
+
+        if ( suffix_array.length == 0 )
+        {
+            return true;
+        }
+        else
+        {
+            for ( suffix_index = 0;
+                  suffix_index < suffix_array.length;
+                  ++suffix_index )
+            {
+                if ( line.endsWith( suffix_array[ suffix_index ] ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    // ~~
+
+    function Merge()
+    {
+        var
+            merged_line_array,
+            merged_line_index,
+            merged_text,
+            prefix_array,
+            suffix_array,
+            reference_line_array,
+            merged_line_count,
+            translation_array,
+            translation_count_map,
+            translation_line,
+            translation_line_array,
+            translation_line_array_array,
+            translation_line_count,
+            translation_separator,
+            translation_line_is_capitalized,
+            translation_line_is_punctuated,
+            translation_line_is_trimmed,
+            translation_line_is_uncapitalized,
+            translation_line_is_unpunctuated,
+            translation_text_count,
+            translation_text_index;
+
+        reference_line_array = document.getElementById( "ReferenceText" ).value.split( "\n" );
+        merged_line_count = reference_line_array.length;
+
+        translation_line_array_array = [];
+        translation_text_count = 4;
+
+        for ( translation_text_index = 0;
+              translation_text_index < translation_text_count;
+              ++translation_text_index )
+        {
+            translation_line_array
+                = document.getElementById(
+                      "TranslationText" + ( translation_text_index + 1 )
+                      ).value.split( "\n" );
+
+            translation_line_count = translation_line_array.length;
+
+            if ( translation_line_count > merged_line_count )
+            {
+                merged_line_count = translation_line_count;
+            }
+
+            translation_line_array_array.push( translation_line_array );
+        }
+
+        merged_line_array = [];
+        merged_line_array.length = merged_line_count;
+
+        prefix_array = document.getElementById( "PrefixArray" ).value.split( "," );
+        suffix_array = document.getElementById( "SuffixArray" ).value.split( "," );
+
+        translation_separator = document.getElementById( "TranslationSeparator" ).value;
+        translation_line_is_trimmed = document.getElementById( "IsTrimmed" ).checked;
+        translation_line_is_capitalized = document.getElementById( "IsCapitalized" ).checked;
+        translation_line_is_uncapitalized = document.getElementById( "IsUncapitalized" ).checked;
+        translation_line_is_punctuated = document.getElementById( "IsPunctuated" ).checked;
+        translation_line_is_unpunctuated = document.getElementById( "IsUnpunctuated" ).checked;
+
+        for ( merged_line_index = 0;
+              merged_line_index < merged_line_count;
+              ++merged_line_index )
+        {
+            translation_count_map = new Map();
+
+            for ( translation_text_index = 0;
+                  translation_text_index < translation_text_count;
+                  ++translation_text_index )
+            {
+                translation_line_array = translation_line_array_array[ translation_text_index ];
+                translation_line_count = translation_line_array.length;
+
+                if ( merged_line_index < translation_line_count )
+                {
+                    translation_line = translation_line_array[ merged_line_index ];
+
+                    if ( translation_line_is_trimmed )
+                    {
+                        translation_line = translation_line.trim();
+                    }
+
+                    if ( translation_line_is_capitalized )
+                    {
+                        translation_line = GetCapitalizedLine( translation_line );
+                    }
+
+                    if ( translation_line_is_uncapitalized )
+                    {
+                        translation_line = GetUncapitalizedLine( translation_line );
+                    }
+
+                    if ( translation_line_is_punctuated )
+                    {
+                        translation_line = GetPunctuatedLine( translation_line );
+                    }
+
+                    if ( translation_line_is_unpunctuated )
+                    {
+                        translation_line = GetUnpunctuatedLine( translation_line );
+                    }
+
+                    if ( translation_line != ""
+                         && HasValidPrefix( translation_line, prefix_array )
+                         && HasValidSuffix( translation_line, suffix_array ) )
+                    {
+                        if ( translation_count_map.has( translation_line ) )
+                        {
+                            translation_count_map.set(
+                                translation_line,
+                                translation_count_map.get( translation_line ) + 1
+                                );
+                        }
+                        else
+                        {
+                            translation_count_map.set( translation_line, 1 );
+                        }
+                    }
+                }
+            }
+
+            translation_array
+                = [ ...translation_count_map.entries() ].sort(
+                    function ( first_translation_count_entry, second_translation_count_entry )
+                    {
+                        return second_translation_count_entry[ 1 ] - first_translation_count_entry[ 1 ];
+                    }
+                    ).map(
+                        function ( translation_count_entry )
+                        {
+                            return translation_count_entry[ 0 ];
+                        }
+                        );
+
+            merged_line_array[ merged_line_index ] = translation_array.join( translation_separator );
+        }
+
+        merged_text = merged_line_array.join( "\n" );
+
+        document.getElementById( "MergedText" ).value = merged_text;
+    }
+
+    // ~~
+
+    function SynchronizeScroll(
+        event
+        )
+    {
+        var
+            text_element,
+            text_element_array;
+
+        text_element_array = document.getElementsByClassName( "text" );
+
+        for ( text_element of text_element_array )
+        {
+            text_element.scrollTop = this.scrollTop;
+        }
+    }
+
+    // ~~
+
+    function UpdateReferenceTextCounts(
+        event
+        )
+    {
+        document.getElementById( "ReferenceTextCounts" ).value
+            = document.getElementById( "ReferenceText" ).value.split( "\n" ).length
+              + " lines, "
+              + document.getElementById( "ReferenceText" ).value.length
+              + " characters";
+    }
+
+    // -- STATEMENTS
+
+    var
+        text_element,
+        text_element_array;
+
+    text_element_array = document.getElementsByClassName( "text" );
+
+    for ( text_element of text_element_array )
+    {
+        text_element.addEventListener( "scroll", SynchronizeScroll, false );
+    }
+
+    UpdateReferenceTextCounts();
+
+    document.getElementById( "ReferenceText" ).addEventListener( "input", UpdateReferenceTextCounts, false );
+</script>
