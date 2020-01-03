@@ -26,7 +26,7 @@
         resize: none;
         white-space: pre;
         width: 16.66vw;
-        height: 87vh;
+        height: 80vh;
     }
 
     .input
@@ -64,8 +64,25 @@
         </tr>
         <tr>
             <td>
-                <input id="ReferenceTextCounts" class="input" type="text" placeholder="Reference Text Counts" disabled="disabled"/>
+                <input id="ReferenceTextSize" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
             </td>
+            <td>
+                <input id="TranslationTextSize1" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+            </td>
+            <td>
+                <input id="TranslationTextSize2" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+            </td>
+            <td>
+                <input id="TranslationTextSize3" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+            </td>
+            <td>
+                <input id="TranslationTextSize4" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+            </td>
+            <td>
+                <input id="MergedTextSize" class="input" type="text" placeholder="Reference Text Size" disabled="disabled"/>
+            </td>
+        </tr>
+        <tr>
             <td>
                 <input id="PrefixArray" class="input" type="text" placeholder="Prefix List"/>
             </td>
@@ -96,6 +113,34 @@
 </span>
 <script>
     // -- FUNCTIONS
+
+    function GetTextSize(
+        text_element_id
+        )
+    {
+        return (
+            document.getElementById( text_element_id ).value.split( "\n" ).length
+              + " lines, "
+              + document.getElementById( text_element_id ).value.length
+              + " characters"
+            );
+    }
+
+    // ~~
+
+    function UpdateTextSize(
+        event
+        )
+    {
+        document.getElementById( "ReferenceTextSize" ).value = GetTextSize( "ReferenceText" );
+        document.getElementById( "TranslationTextSize1" ).value = GetTextSize( "TranslationText1" );
+        document.getElementById( "TranslationTextSize2" ).value = GetTextSize( "TranslationText2" );
+        document.getElementById( "TranslationTextSize3" ).value = GetTextSize( "TranslationText3" );
+        document.getElementById( "TranslationTextSize4" ).value = GetTextSize( "TranslationText4" );
+        document.getElementById( "MergedTextSize" ).value = GetTextSize( "MergedText" );
+    }
+
+    // ~~
 
     function GetCapitalizedLine(
         line
@@ -366,6 +411,8 @@
         merged_text = merged_line_array.join( "\n" );
 
         document.getElementById( "MergedText" ).value = merged_text;
+
+        UpdateTextSize();
     }
 
     // ~~
@@ -386,19 +433,6 @@
         }
     }
 
-    // ~~
-
-    function UpdateReferenceTextCounts(
-        event
-        )
-    {
-        document.getElementById( "ReferenceTextCounts" ).value
-            = document.getElementById( "ReferenceText" ).value.split( "\n" ).length
-              + " lines, "
-              + document.getElementById( "ReferenceText" ).value.length
-              + " characters";
-    }
-
     // -- STATEMENTS
 
     var
@@ -412,7 +446,12 @@
         text_element.addEventListener( "scroll", SynchronizeScroll, false );
     }
 
-    UpdateReferenceTextCounts();
+    UpdateTextSize();
 
-    document.getElementById( "ReferenceText" ).addEventListener( "input", UpdateReferenceTextCounts, false );
+    document.getElementById( "ReferenceText" ).addEventListener( "input", UpdateTextSize, false );
+    document.getElementById( "TranslationText1" ).addEventListener( "input", UpdateTextSize, false );
+    document.getElementById( "TranslationText2" ).addEventListener( "input", UpdateTextSize, false );
+    document.getElementById( "TranslationText3" ).addEventListener( "input", UpdateTextSize, false );
+    document.getElementById( "TranslationText4" ).addEventListener( "input", UpdateTextSize, false );
+    document.getElementById( "MergedText" ).addEventListener( "input", UpdateTextSize, false );
 </script>
