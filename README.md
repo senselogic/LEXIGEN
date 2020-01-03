@@ -1,0 +1,2 @@
+# LEXIGEN
+Lexicon generator
