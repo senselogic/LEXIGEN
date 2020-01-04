@@ -24,10 +24,19 @@
         font-size: 1vw;
     }
 
+    a
+    {
+        display: block;
+        padding: 5px;
+        text-align: center;
+        color: #444;
+        text-decoration: none;
+    }
+
     .text
     {
-        width: calc( 100vw / 7 );
-        height: 82vh;
+        width: calc( 100vw / 8 );
+        height: 80vh;
         overflow: scroll;
         resize: none;
         white-space: pre;
@@ -35,13 +44,18 @@
 
     .input
     {
-        width: calc( 100vw / 7 );
+        width: calc( 100vw / 8 );
         height: 4vh;
     }
 
     .checkbox
     {
         font-size: 0.7vw;
+    }
+
+    .center
+    {
+         text-align: center;
     }
 </style>
 <table>
@@ -64,6 +78,9 @@
             </td>
             <td>
                 <textarea id="TranslationText4" class="text" placeholder="Translation Text" spellcheck="false"></textarea>
+            </td>
+            <td>
+                <textarea id="TranslationText5" class="text" placeholder="Translation Text" spellcheck="false"></textarea>
             </td>
             <td>
                 <textarea id="TargetText" class="text" placeholder="Target Text" spellcheck="false"></textarea>
@@ -89,53 +106,21 @@
                 <input id="TranslationTextSize4" class="input" type="text" placeholder="Translation Text Size" disabled="disabled"/>
             </td>
             <td>
+                <input id="TranslationTextSize5" class="input" type="text" placeholder="Translation Text Size" disabled="disabled"/>
+            </td>
+            <td>
                 <input id="TargetTextSize" class="input" type="text" placeholder="Translation Text Size" disabled="disabled"/>
             </td>
         </tr>
         <tr>
             <td>
-                <div class="checkbox">
-                    <input id="SourceIsTrimmed" type="checkbox"/>&nbsp;trim
-                </div>
-                <div class="checkbox">
-                    <input id="SourceIsCapitalized" type="checkbox"/>&nbsp;capitalize&nbsp;
-                    <input id="SourceIsPunctuated" type="checkbox"/>&nbsp;punctuate
-                </div>
-                <div class="checkbox">
-                    <input id="SourceIsUncapitalized" type="checkbox"/>&nbsp;uncapitalize&nbsp;
-                    <input id="SourceIsUnpunctuated" type="checkbox"/>&nbsp;unpunctuate
-                </div>
+                <input id="ListSeparator" class="input" type="text" placeholder="List Separator" value=","/>
             </td>
             <td>
                 <input id="RemovedPrefixArray" class="input" type="text" placeholder="Removed Prefixes"/>
             </td>
             <td>
                 <input id="RemovedSuffixArray" class="input" type="text" placeholder="Removed Suffixes"/>
-            </td>
-            <td>
-            </td>
-            <td>
-            </td>
-            <td>
-                <input id="ListSeparator" class="input" type="text" placeholder="List Separator" value=","/>
-            </td>
-            <td>
-                <div class="checkbox">
-                    <input id="TranslationIsTrimmed" type="checkbox"/>&nbsp;trim
-                </div>
-                <div class="checkbox">
-                    <input id="TranslationIsCapitalized" type="checkbox"/>&nbsp;capitalize&nbsp;
-                    <input id="TranslationIsPunctuated" type="checkbox"/>&nbsp;punctuate
-                </div>
-                <div class="checkbox">
-                    <input id="TranslationIsUncapitalized" type="checkbox"/>&nbsp;uncapitalize&nbsp;
-                    <input id="TranslationIsUnpunctuated" type="checkbox"/>&nbsp;unpunctuate
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <button onclick="Apply()">Apply</button>
             </td>
             <td>
                 <input id="ForbiddenPrefixArray" class="input" type="text" placeholder="Forbidden Prefixes"/>
@@ -152,8 +137,51 @@
             <td>
                 <input id="TranslationSeparator" class="input" type="text" placeholder="Translation Separator" value="/"/>
             </td>
+        </tr>
+        <tr>
             <td>
+                <div class="checkbox">
+                    <input id="SourceIsTrimmed" type="checkbox"/>&nbsp;Trim
+                </div>
+                <div class="checkbox">
+                    <input id="SourceIsCapitalized" type="checkbox"/>&nbsp;Capitalize&nbsp;
+                    <input id="SourceIsPunctuated" type="checkbox"/>&nbsp;Punctuate
+                </div>
+                <div class="checkbox">
+                    <input id="SourceIsUncapitalized" type="checkbox"/>&nbsp;Uncapitalize&nbsp;
+                    <input id="SourceIsUnpunctuated" type="checkbox"/>&nbsp;Unpunctuate
+                </div>
+            </td>
+            <td class="center">
                 <button onclick="Apply()">Apply</button>
+            </td>
+            <td>
+                 <a href="https://www.online-translator.com" target="_blank">Promt</a>
+            </td>
+            <td>
+                 <a href="https://translate.google.com" target="_blank">Google</a>
+            </td>
+            <td>
+                 <a href="https://www.bing.com/translator" target="_blank">Bing</a>
+            </td>
+            <td>
+                 <a href="https://translate.systran.net/translationTools/text" target="_blank">Systran</a>
+            </td>
+            <td>
+                 <a href="https://www.deepl.com/translator" target="_blank">DeepL</a>
+            </td>
+            <td>
+                <div class="checkbox">
+                    <input id="TranslationIsTrimmed" type="checkbox"/>&nbsp;Trim
+                </div>
+                <div class="checkbox">
+                    <input id="TranslationIsCapitalized" type="checkbox"/>&nbsp;Capitalize&nbsp;
+                    <input id="TranslationIsPunctuated" type="checkbox"/>&nbsp;Punctuate
+                </div>
+                <div class="checkbox">
+                    <input id="TranslationIsUncapitalized" type="checkbox"/>&nbsp;Uncapitalize&nbsp;
+                    <input id="TranslationIsUnpunctuated" type="checkbox"/>&nbsp;Unpunctuate
+                </div>
             </td>
         </tr>
     </tbody>
@@ -185,6 +213,7 @@
         document.getElementById( "TranslationTextSize2" ).value = GetTextSize( "TranslationText2" );
         document.getElementById( "TranslationTextSize3" ).value = GetTextSize( "TranslationText3" );
         document.getElementById( "TranslationTextSize4" ).value = GetTextSize( "TranslationText4" );
+        document.getElementById( "TranslationTextSize5" ).value = GetTextSize( "TranslationText5" );
         document.getElementById( "TargetTextSize" ).value = GetTextSize( "TargetText" );
     }
 
@@ -410,7 +439,7 @@
         translated_line_array.length = source_line_count;
 
         translation_line_array_array = [];
-        translation_text_count = 4;
+        translation_text_count = 5;
 
         target_line_count = source_line_count;
 
@@ -621,5 +650,6 @@
     document.getElementById( "TranslationText2" ).addEventListener( "input", UpdateTextSize, false );
     document.getElementById( "TranslationText3" ).addEventListener( "input", UpdateTextSize, false );
     document.getElementById( "TranslationText4" ).addEventListener( "input", UpdateTextSize, false );
+    document.getElementById( "TranslationText5" ).addEventListener( "input", UpdateTextSize, false );
     document.getElementById( "TargetText" ).addEventListener( "input", UpdateTextSize, false );
 </script>
